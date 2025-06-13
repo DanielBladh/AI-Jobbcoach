@@ -143,7 +143,7 @@ Följ dessa steg för att få igång applikationen lokalt.
 ---
 
 ## 6. Projektstruktur
-
+```
 ├── backend/
 │   ├── controllers/         # Logik för API-endpoints (ai.controller.js)
 │   ├── routes/              # Definition av API-rutter (aiRoutes.js)
@@ -170,7 +170,7 @@ Följ dessa steg för att få igång applikationen lokalt.
 ├── .gitignore               # Filer att ignorera i Git
 ├── README.md                # Denna fil
 └── assistant_id.txt         # (Genereras automatiskt av backend vid första körningen)
-
+```
 ---
 
 ## 7. Utveckling och Reflektion
