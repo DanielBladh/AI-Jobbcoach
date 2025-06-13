@@ -143,3 +143,81 @@ Följ dessa steg för att få igång applikationen lokalt.
 ---
 
 ## 6. Projektstruktur
+
+├── backend/
+│   ├── controllers/         # Logik för API-endpoints (ai.controller.js)
+│   ├── routes/              # Definition av API-rutter (aiRoutes.js)
+│   ├── config/              # OpenAI API-konfiguration (openai.js)
+│   ├── utils/               # Hjälpfunktioner, t.ex. assistantSetup.js
+│   ├── .env                 # Miljövariabler för backend (t.ex. OpenAI API Key)
+│   ├── package.json
+│   └── server.js            # Express server startpunkt
+│
+├── frontend/
+│   ├── public/              # Statiska tillgångar (index.html, bilder)
+│   ├── src/
+│   │   ├── components/      # Återanvändbara UI-komponenter (t.ex. TypingIndicator)
+│   │   ├── context/         # React Context för global state (AppContext.jsx)
+│   │   ├── pages/           # Sidkomponenter (UploadPage, GenerateLetterPage, AskAiCoachPage)
+│   │   ├── utils/           # Frontend-hjälpfunktioner (api.js)
+│   │   ├── assets/          # Bilder och ikoner
+│   │   ├── App.js           # Huvudkomponent, routerkonfiguration
+│   │   └── index.js         # Applikationens ingångspunkt
+│   │   └── index.css/App.css # Globala stilar
+│   ├── .env                 # Miljövariabler för frontend (t.ex. Backend URL)
+│   └── package.json
+│
+├── .gitignore               # Filer att ignorera i Git
+├── README.md                # Denna fil
+└── assistant_id.txt         # (Genereras automatiskt av backend vid första körningen)
+
+---
+
+## 7. Utveckling och Reflektion
+
+Under utvecklingen av AI Job Coach har fokus legat på att demonstrera integrationen av OpenAI:s Assistants API för att skapa en intelligent och kontextmedveten AI-coach.
+
+**Val av Tekniker:**
+* **OpenAI Assistants API:** Valdes specifikt för att uppfylla kraven i delkurs 3. Dess inbyggda minneshantering (Threads) och förmåga att integrera verktyg som "File Search" (Retrieval) var avgörande. Detta förenklade minneshanteringen av konversationen avsevärt jämfört med att manuellt hantera chatt-historik. Retrieval-verktyget är perfekt för att låta AI:n "läsa" användarens uppladdade dokument dynamiskt.
+* **React & Context API:** Valdes för att skapa ett dynamiskt och reaktivt användargränssnitt, samt för att effektivt dela status (CV, jobbannons, brev) mellan olika delar av applikationen.
+* **Node.js/Express.js:** Ett robust val för att hantera API-anrop och serverlogik.
+
+**Gränssnittsdesign:**
+Gränssnittet är designat för att vara intuitivt och steg-för-steg. Från uppladdning till brevgenerering och sedan till AI-coachningen, guidas användaren genom ett logiskt flöde. Chatt-interfacet för AI Coachen bidrar till en naturlig och engagerande användarupplevelse.
+
+**Felhantering:**
+Grundläggande felhantering har implementerats på både frontend och backend för att fånga upp och presentera felmeddelanden på ett användarvänligt sätt. Detta inkluderar hantering av saknade indata, API-fel från OpenAI och problem med serverkommunikation.
+
+**Utmaningar:**
+* **Initial förståelse av Assistants API:** Att skifta från det enklare Chat Completions API till det mer stateful Assistants API krävde en djupare förståelse för koncept som Assistants, Threads, Messages och Runs, samt asynkron polling för att hämta svar.
+* **Filhantering med Assistants API:** Att korrekt ladda upp dokument som filer till OpenAI och associera dem med trådar för Retrieval-användning var en ny aspekt. Att hantera temporära filer på servern för detta syfte var en praktisk utmaning.
+* **Minneshantering:** Även om Assistants API hanterar minnet, krävdes noggrann planering för att koppla en användarsession på frontend till en specifik tråd på backend, särskilt utan en fullfjädrad autentisering/sessionshantering. Den nuvarande lösningen med `userId` i `localStorage` är en fungerande förenkling för en PoC.
+
+**Reflektion i relation till LangChain:**
+I detta projekt har huvudfokus lagts på att direkt integrera OpenAI Assistants API för dess inbyggda state- och verktygshantering (särskilt File Search). LangChain är ett kraftfullt ramverk för att bygga avancerade LLM-applikationer och kunde absolut ha använts för att orkestrera anropen till Assistants API, eller för att hantera mer komplexa agenter eller tool-use scenarios.
+
+* **Varför inte mer LangChain nu?** För att tydligt demonstrera kärnfunktionaliteten i Assistants API, som är ett direkt krav i uppgiften. Assistants API erbjuder redan mycket av den "agentic behavior" och minneshantering som LangChain underlättar.
+* **Hur LangChain skulle kunna integrerats:**
+    * **LangChain Agents:** Skulle kunna användas för att bygga mer komplexa beslutsflöden för AI-coachen, t.ex. om den ska besvara en fråga direkt, eller om den behöver hämta information från en extern källa (om fler "verktyg" skulle läggas till utöver filanalys).
+    * **LangChain Chains/LCEL:** För att strukturera och koppla ihop olika steg i processen (t.ex. att en kedja först analyserar CV:t, sedan jobbannonsen, och sedan genererar brevet med specifika instruktioner).
+    * **LangChain Memory:** Om vi *inte* hade använt Assistants API, skulle LangChain's Memory-moduler varit avgörande för att implementera konversationsminnet i AI Coachen.
+
+För att uppnå VG-kriteriet kring LangChain, skulle nästa steg vara att ersätta de direkta OpenAI API-anropen med LangChain-abstraktioner som interagerar med Assistants API, eller att implementera ytterligare verktyg/agenter via LangChain.
+
+---
+
+## 8. Framtida Förbättringar
+
+* **Mer robust filhantering:** Implementera en lösning som undviker att ladda upp samma dokument flera gånger per användarsession till OpenAI för att optimera kostnader och prestanda.
+* **Persistens för trådar och filer:** Lagra `threadId` och `fileId`:n i en databas för att kunna återuppta konversationer och återanvända uppladdade filer över tid och sessioner.
+* **Avancerad AI Coach-funktionalitet:** Lägga till fler "verktyg" till AI-coachen via Assistants API (t.ex. webbsökning, kalenderbokning, eller specifik formatgenerering).
+* **Användarautentisering:** Implementera ett inloggningssystem för att koppla trådar och dokument till specifika användare.
+* **Feedback-system:** Möjlighet för användare att ge feedback på genererade brev och AI-råd.
+* **Redigeringsfunktion för brev:** Ett interaktivt fält där användaren direkt kan redigera det genererade brevet.
+* **Support för andra dokumentformat:** Möjlighet att ladda upp .pdf, .docx istället för enbart text (kräver då parsning i backend).
+
+---
+
+## 9. Licens
+
+Detta projekt är licensierat under [MIT License](https://opensource.org/licenses/MIT).
